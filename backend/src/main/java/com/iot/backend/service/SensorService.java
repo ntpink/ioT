@@ -25,7 +25,7 @@ public class SensorService {
     private SensorDataRepository sensorDataRepository;
 
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-    private final DateTimeFormatter tableDateFormatter = DateTimeFormatter.ofPattern("HH:mm:ss MM/dd/yyyy");
+    private final DateTimeFormatter tableDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
     // Danh sách các kết nối Web Frontend đang lắng nghe trực tiếp luồng SSE
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();

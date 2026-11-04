@@ -20,7 +20,7 @@ public class ActionHistoryService {
     @Autowired
     private ActionHistoryRepository actionHistoryRepository;
 
-    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss MM/dd/yyyy");
+    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
     public PaginatedResponse<ActionHistoryDto> getHistory(
             int page, int pageSize, String device, String action, String status, String timeQuery) {

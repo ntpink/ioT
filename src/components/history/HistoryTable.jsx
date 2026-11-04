@@ -4,6 +4,7 @@ import Table from '../common/Table';
 import StatusBadge from '../common/StatusBadge';
 import Pagination from '../common/Pagination';
 import CopyButton from '../common/CopyButton';
+import formatDateTime from '../../utils/dateFormatter';
 
 export const HistoryTable = ({
   records = [],
@@ -62,12 +63,15 @@ export const HistoryTable = ({
       key: 'time',
       align: 'center',
       width: '24%',
-      render: (val) => (
-        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ whiteSpace: 'nowrap' }}>{val}</span>
-          <CopyButton text={val} />
-        </div>
-      ),
+      render: (val) => {
+        const formattedTime = formatDateTime(val);
+        return (
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ whiteSpace: 'nowrap' }}>{formattedTime}</span>
+            <CopyButton text={formattedTime} />
+          </div>
+        );
+      },
     },
   ];
 

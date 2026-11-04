@@ -25,10 +25,16 @@ public interface SensorDataRepository extends JpaRepository<SensorData, Long> {
 
     // Lọc theo thời gian nếu cần
     @Query(value = "SELECT * FROM sensor_data s WHERE " +
-           "(:timeQuery IS NULL OR :timeQuery = '' OR DATE_FORMAT(s.created_at, '%H:%i:%s %m/%d/%Y') LIKE CONCAT('%', :timeQuery, '%') OR DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%')) " +
+           "(:timeQuery IS NULL OR :timeQuery = '' OR " +
+           "DATE_FORMAT(s.created_at, '%d/%m/%Y %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%') OR " +
+           "DATE_FORMAT(s.created_at, '%H:%i:%s %m/%d/%Y') LIKE CONCAT('%', :timeQuery, '%') OR " +
+           "DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%')) " +
            "ORDER BY s.created_at DESC",
            countQuery = "SELECT count(*) FROM sensor_data s WHERE " +
-           "(:timeQuery IS NULL OR :timeQuery = '' OR DATE_FORMAT(s.created_at, '%H:%i:%s %m/%d/%Y') LIKE CONCAT('%', :timeQuery, '%') OR DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%'))",
+           "(:timeQuery IS NULL OR :timeQuery = '' OR " +
+           "DATE_FORMAT(s.created_at, '%d/%m/%Y %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%') OR " +
+           "DATE_FORMAT(s.created_at, '%H:%i:%s %m/%d/%Y') LIKE CONCAT('%', :timeQuery, '%') OR " +
+           "DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%'))",
            nativeQuery = true)
     Page<SensorData> searchSensors(@Param("timeQuery") String timeQuery, Pageable pageable);
 }

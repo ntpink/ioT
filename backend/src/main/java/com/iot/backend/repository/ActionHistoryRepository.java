@@ -17,13 +17,19 @@ public interface ActionHistoryRepository extends JpaRepository<ActionHistory, Lo
            "(:device IS NULL OR :device = '' OR :device = 'All Devices' OR :device = 'All' OR LOWER(a.device) LIKE LOWER(CONCAT('%', :device, '%'))) AND " +
            "(:action IS NULL OR :action = '' OR :action = 'All Actions' OR :action = 'All' OR LOWER(a.action) LIKE LOWER(CONCAT('%', :action, '%'))) AND " +
            "(:status IS NULL OR :status = '' OR :status = 'All Status' OR :status = 'All' OR LOWER(a.status) = LOWER(:status)) AND " +
-           "(:timeQuery IS NULL OR :timeQuery = '' OR :timeQuery = 'All Time' OR :timeQuery = 'All' OR DATE_FORMAT(a.created_at, '%H:%i:%s %m/%d/%Y') LIKE CONCAT('%', :timeQuery, '%') OR DATE_FORMAT(a.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%')) " +
+           "(:timeQuery IS NULL OR :timeQuery = '' OR :timeQuery = 'All Time' OR :timeQuery = 'All' OR " +
+           "DATE_FORMAT(a.created_at, '%d/%m/%Y %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%') OR " +
+           "DATE_FORMAT(a.created_at, '%H:%i:%s %m/%d/%Y') LIKE CONCAT('%', :timeQuery, '%') OR " +
+           "DATE_FORMAT(a.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%')) " +
            "ORDER BY a.created_at DESC",
            countQuery = "SELECT count(*) FROM action_history a WHERE " +
            "(:device IS NULL OR :device = '' OR :device = 'All Devices' OR :device = 'All' OR LOWER(a.device) LIKE LOWER(CONCAT('%', :device, '%'))) AND " +
            "(:action IS NULL OR :action = '' OR :action = 'All Actions' OR :action = 'All' OR LOWER(a.action) LIKE LOWER(CONCAT('%', :action, '%'))) AND " +
            "(:status IS NULL OR :status = '' OR :status = 'All Status' OR :status = 'All' OR LOWER(a.status) = LOWER(:status)) AND " +
-           "(:timeQuery IS NULL OR :timeQuery = '' OR :timeQuery = 'All Time' OR :timeQuery = 'All' OR DATE_FORMAT(a.created_at, '%H:%i:%s %m/%d/%Y') LIKE CONCAT('%', :timeQuery, '%') OR DATE_FORMAT(a.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%'))",
+           "(:timeQuery IS NULL OR :timeQuery = '' OR :timeQuery = 'All Time' OR :timeQuery = 'All' OR " +
+           "DATE_FORMAT(a.created_at, '%d/%m/%Y %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%') OR " +
+           "DATE_FORMAT(a.created_at, '%H:%i:%s %m/%d/%Y') LIKE CONCAT('%', :timeQuery, '%') OR " +
+           "DATE_FORMAT(a.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%'))",
            nativeQuery = true)
     Page<ActionHistory> searchActionHistory(
             @Param("device") String device,
