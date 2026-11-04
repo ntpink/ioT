@@ -2,6 +2,7 @@ import React from 'react';
 import Card from '../common/Card';
 import Table from '../common/Table';
 import Pagination from '../common/Pagination';
+import CopyButton from '../common/CopyButton';
 
 export const SensorTable = ({
   records = [],
@@ -40,7 +41,12 @@ export const SensorTable = ({
       key: 'time',
       align: 'center',
       width: '36%',
-      render: (val) => <span style={{ whiteSpace: 'nowrap' }}>{val}</span>,
+      render: (val) => (
+        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ whiteSpace: 'nowrap' }}>{val}</span>
+          <CopyButton text={val} />
+        </div>
+      ),
     },
   ];
 

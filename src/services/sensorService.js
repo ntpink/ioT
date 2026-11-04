@@ -109,10 +109,12 @@ export const sensorService = {
       };
     }
 
-    // Kết nối luồng thời gian thực SSE từ Spring Boot Backend
+    // Kết nối luồng thời gian thực SSE từ Spring Boot Backend (kèm token xác thực)
     let eventSource = null;
     try {
-      eventSource = new EventSource(`${apiClient.baseURL}/sensors/stream`);
+      const token = localStorage.getItem('auth_token') || '';
+      const streamUrl = `${apiClient.baseURL}/sensors/stream${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+      eventSource = new EventSource(streamUrl);
       eventSource.addEventListener('sensor_update', (event) => {
         try {
           const payload = JSON.parse(event.data);

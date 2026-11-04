@@ -1,0 +1,823 @@
+{
+	"info": {
+		"_postman_id": "iot-system-b23dccn084-collection-jwt",
+		"name": "IoT System - API Collection (JWT Auth & Role)",
+		"description": "Bộ sưu tập kiểm thử toàn diện các API của Hệ thống IoT (Spring Boot 3 + MySQL + MQTT) có bảo mật Spring Security & JWT Bearer Token.\nSinh viên: Nguyễn Thanh Bình - MSV: B23DCCN084",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "0. Authentication (Xác thực JWT)",
+			"item": [
+				{
+					"name": "POST Đăng nhập (Login & Nhận Token)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Đăng nhập thành công 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"pm.test(\"Nhận được JWT Token hợp lệ\", function () {",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"    pm.expect(jsonData.type).to.eql('Bearer');",
+									"    pm.expect(jsonData.username).to.eql('binh');",
+									"});",
+									"",
+									"// Tự động lưu Token vào biến để các API khác dùng chung",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set(\"jwt_token\", jsonData.token);",
+									"    pm.environment.set(\"jwt_token\", jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"binh\",\n    \"password\": \"binh2502\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Đăng nhập với tài khoản mặc định và tự động gán Token vào biến để các API khác sử dụng."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Đăng ký tài khoản mới (Register)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Đăng ký thành công (201 Created hoặc 409 nếu đã tồn tại)\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 409]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"sinhvien_test\",\n    \"password\": \"123456\",\n    \"fullName\": \"Sinh Viên Test\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Tạo tài khoản mới và cấp quyền đăng nhập."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Thông tin người dùng hiện tại (/auth/me)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Xác thực Token thành công 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Thông tin người dùng đúng định dạng\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('username');",
+									"    pm.expect(jsonData).to.have.property('fullName');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						},
+						"description": "Kiểm tra thông tin tài khoản hiện tại thông qua Bearer Token."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "1. Sensors (Cảm biến)",
+			"item": [
+				{
+					"name": "GET 3 thẻ cảm biến tức thời (Dashboard)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Có đủ 3 thông số cảm biến nhiệt độ, độ ẩm, ánh sáng\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('temperature');",
+									"    pm.expect(jsonData).to.have.property('humidity');",
+									"    pm.expect(jsonData).to.have.property('light');",
+									"    pm.expect(jsonData.temperature.unit).to.eql('°C');",
+									"    pm.expect(jsonData.humidity.unit).to.eql('%');",
+									"    pm.expect(jsonData.light.unit).to.eql('lux');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sensors/realtime",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sensors",
+								"realtime"
+							]
+						},
+						"description": "Lấy giá trị mới nhất của 3 cảm biến phục vụ hiển thị trên Dashboard (Yêu cầu Bearer Token)."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Dữ liệu biểu đồ (6 điểm đo gần nhất)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Trả về mảng danh sách điểm đo cho biểu đồ\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    if (jsonData.length > 0) {",
+									"        pm.expect(jsonData[0]).to.have.property('time');",
+									"        pm.expect(jsonData[0]).to.have.property('temperature');",
+									"        pm.expect(jsonData[0]).to.have.property('humidity');",
+									"        pm.expect(jsonData[0]).to.have.property('light');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sensors/chart",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sensors",
+								"chart"
+							]
+						},
+						"description": "Lấy 6 mốc dữ liệu gần nhất để vẽ biểu đồ trượt thời gian thực."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Danh sách dữ liệu cảm biến (Phân trang)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Phân trang chuẩn cấu trúc PaginatedResponse\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData).to.have.property('total');",
+									"    pm.expect(jsonData).to.have.property('page');",
+									"    pm.expect(jsonData).to.have.property('pageSize');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sensors?page=1&pageSize=5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sensors"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Lấy danh sách dữ liệu đo cảm biến trang 1, mỗi trang 5 dòng."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Lọc cảm biến theo loại (Temperature)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Chỉ trả về các bản ghi thuộc loại Temperature\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.length > 0) {",
+									"        jsonData.data.forEach(function(item) {",
+									"            pm.expect(item.sensorType).to.eql('Temperature');",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sensors?type=Temperature&page=1&pageSize=5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sensors"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "Temperature"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Lọc danh sách dữ liệu cảm biến chỉ lấy loại Nhiệt độ."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Tìm kiếm cảm biến theo giá trị (Value)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sensors?value=26&page=1&pageSize=5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sensors"
+							],
+							"query": [
+								{
+									"key": "value",
+									"value": "26"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Tìm kiếm bản ghi cảm biến có giá trị chứa số 26."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Devices (Thiết bị)",
+			"item": [
+				{
+					"name": "GET Danh sách thiết bị (Đèn 1, Đèn 2)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Trả về danh sách thiết bị có Đèn 1 và Đèn 2\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    pm.expect(jsonData.length).to.be.at.least(2);",
+									"    pm.expect(jsonData[0]).to.have.property('name');",
+									"    pm.expect(jsonData[0]).to.have.property('status');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/devices",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices"
+							]
+						},
+						"description": "Lấy danh sách các thiết bị ngoại vi và trạng thái bật/tắt hiện tại."
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Bật Đèn 1 (Turn ON)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Đèn 1 đã bật (status = true)\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.eql(1);",
+									"    pm.expect(jsonData.status).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/devices/1/status?operator=Nguyễn Thanh Bình",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices",
+								"1",
+								"status"
+							],
+							"query": [
+								{
+									"key": "operator",
+									"value": "Nguyễn Thanh Bình"
+								}
+							]
+						},
+						"description": "Gửi lệnh bật Đèn 1 (LED1_ON) qua MQTT và ghi vào lịch sử thao tác."
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Tắt Đèn 1 (Turn OFF)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Đèn 1 đã tắt (status = false)\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.eql(1);",
+									"    pm.expect(jsonData.status).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/devices/1/status?operator=Nguyễn Thanh Bình",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices",
+								"1",
+								"status"
+							],
+							"query": [
+								{
+									"key": "operator",
+									"value": "Nguyễn Thanh Bình"
+								}
+							]
+						},
+						"description": "Gửi lệnh tắt Đèn 1 (LED1_OFF) qua MQTT và ghi vào lịch sử thao tác."
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Bật Đèn 2 (Turn ON)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Đèn 2 đã bật (status = true)\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.eql(2);",
+									"    pm.expect(jsonData.status).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/devices/2/status?operator=Nguyễn Thanh Bình",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices",
+								"2",
+								"status"
+							],
+							"query": [
+								{
+									"key": "operator",
+									"value": "Nguyễn Thanh Bình"
+								}
+							]
+						},
+						"description": "Gửi lệnh bật Đèn 2 (LED2_ON) qua MQTT và ghi vào lịch sử thao tác."
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Tắt Đèn 2 (Turn OFF)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Đèn 2 đã tắt (status = false)\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.eql(2);",
+									"    pm.expect(jsonData.status).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/devices/2/status?operator=Nguyễn Thanh Bình",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices",
+								"2",
+								"status"
+							],
+							"query": [
+								{
+									"key": "operator",
+									"value": "Nguyễn Thanh Bình"
+								}
+							]
+						},
+						"description": "Gửi lệnh tắt Đèn 2 (LED2_OFF) qua MQTT và ghi vào lịch sử thao tác."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Action History (Lịch sử thao tác)",
+			"item": [
+				{
+					"name": "GET Lịch sử thao tác (Phân trang)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Cấu trúc bản ghi lịch sử thao tác hợp lệ\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData).to.have.property('total');",
+									"    if (jsonData.data.length > 0) {",
+									"        pm.expect(jsonData.data[0]).to.have.property('device');",
+									"        pm.expect(jsonData.data[0]).to.have.property('action');",
+									"        pm.expect(jsonData.data[0]).to.have.property('operator');",
+									"        pm.expect(jsonData.data[0]).to.have.property('status');",
+									"        pm.expect(jsonData.data[0]).to.have.property('time');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/action-history?page=1&pageSize=5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"action-history"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Lấy danh sách nhật ký điều khiển thiết bị trang 1, 5 bản ghi."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Lọc lịch sử theo Thiết bị (Light 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/action-history?device=Light 1&page=1&pageSize=5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"action-history"
+							],
+							"query": [
+								{
+									"key": "device",
+									"value": "Light 1"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Lọc các bản ghi thao tác của thiết bị Light 1."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Lọc lịch sử theo Trạng thái (Success)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/action-history?status=Success&page=1&pageSize=5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"action-history"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "Success"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Lọc các thao tác thành công (Success)."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

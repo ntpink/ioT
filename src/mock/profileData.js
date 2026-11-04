@@ -8,7 +8,7 @@ export const profileMock = {
     {
       id: 'github',
       name: 'Github',
-      url: 'https://github.com/ntpink',
+      url: 'https://github.com/ntpink/ioT',
     },
     {
       id: 'figma',
@@ -23,7 +23,7 @@ export const profileMock = {
     {
       id: 'report',
       name: 'Báo Cáo',
-      url: 'https://docs.google.com/document/d/1tZo5qqqRV30kPLwFKvGD8MshmRfrldXvZuAZRW2pZH8/edit?tab=t.0#heading=h.18kadecv5cw8',
+      url: 'https://docs.google.com/document/d/1tZo5qqqRV30kPLwFKvGD8MshmRfrldXvZuAZRW2pZH8/edit?tab=t.0',
     },
   ],
 };

@@ -1,9 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutGrid, BarChart2, Clock, User, Cpu } from 'lucide-react';
+import { LayoutGrid, BarChart2, Clock, User, Cpu, LogOut } from 'lucide-react';
 import { ROUTES } from '../../constants/routes';
+import authService from '../../services/authService';
 
 export const Sidebar = () => {
+  const currentUser = authService.getCurrentUser();
+
   const menuItems = [
     {
       title: 'Dashboard',
@@ -81,7 +84,7 @@ export const Sidebar = () => {
       </div>
 
       {/* Navigation Menu */}
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
         {menuItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -112,9 +115,68 @@ export const Sidebar = () => {
           );
         })}
       </nav>
+
+      {/* User Section & Logout Button */}
+      <div
+        style={{
+          borderTop: '1px solid #334155',
+          paddingTop: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingLeft: '6px' }}>
+          <div
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              backgroundColor: '#3b82f6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: '700',
+              fontSize: '13px',
+              color: '#ffffff',
+            }}
+          >
+            {currentUser?.username?.charAt(0)?.toUpperCase() || 'U'}
+          </div>
+          <div style={{ overflow: 'hidden' }}>
+            <div style={{ fontSize: '13px', fontWeight: '600', color: '#f8fafc', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+              {currentUser?.fullName || currentUser?.username || 'Nguyễn Thanh Bình'}
+            </div>
+            <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+              @{currentUser?.username || 'binh'}
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => authService.logout()}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '10px 14px',
+            backgroundColor: '#27354a',
+            border: 'none',
+            borderRadius: '8px',
+            color: '#f87171',
+            fontSize: '13px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s',
+          }}
+        >
+          <LogOut size={16} />
+          <span>Đăng xuất</span>
+        </button>
+      </div>
     </aside>
   );
 };
 
 export default Sidebar;
-
