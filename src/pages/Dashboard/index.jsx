@@ -1,0 +1,213 @@
+import React, { useState, useEffect, useRef } from 'react';
+import SensorCard from '../../components/dashboard/SensorCard';
+import RealtimeChart from '../../components/dashboard/RealtimeChart';
+import DeviceControl from '../../components/dashboard/DeviceControl';
+import sensorService from '../../services/sensorService';
+import deviceService from '../../services/deviceService';
+import actionHistoryService from '../../services/actionHistoryService';
+
+export const Dashboard = () => {
+  const [sensors, setSensors] = useState(null);
+  const [chartData, setChartData] = useState([]);
+  const [devices, setDevices] = useState([]);
+  const [pendingDevices, setPendingDevices] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  // 1. Tải dữ liệu ban đầu và Lắng nghe luồng dữ liệu thời gian thực 2 giây từ sensorService
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [sensorRes, chartRes, deviceRes] = await Promise.all([
+          sensorService.getRealtimeSensors(),
+          sensorService.getChartData(),
+          deviceService.getDevices(),
+        ]);
+        setSensors(sensorRes);
+        setChartData(chartRes);
+        setDevices(deviceRes);
+      } catch (error) {
+        console.error('Lỗi khi tải dữ liệu dashboard:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // Tự động kéo dữ liệu mới nhất mỗi 2 giây (đảm bảo luôn đồng bộ với MySQL và ESP8266)
+    const intervalId = setInterval(fetchData, 2000);
+
+    // Lắng nghe cập nhật thời gian thực từ SSE (nếu có)
+    const unsubscribe = sensorService.subscribe(({ sensors: liveSensors, chartData: liveChart }) => {
+      if (liveSensors) setSensors({ ...liveSensors });
+      if (liveChart) setChartData([...liveChart]);
+    });
+
+    return () => {
+      clearInterval(intervalId);
+      unsubscribe();
+    };
+  }, []);
+
+  const handleToggleDevice = (id, newStatus) => {
+    // Nếu thiết bị đang trong quá trình chuyển trạng thái 0.5s thì không nhận click tiếp
+    if (pendingDevices[id]) return;
+
+    const targetDevice = devices.find((d) => d.id === id);
+    const deviceName = targetDevice
+      ? targetDevice.name
+      : id === 1
+      ? 'Light 1'
+      : 'Light 2';
+
+    // 1. Kích hoạt trạng thái chuyển đổi (Pending): 'turning_on' hoặc 'turning_off'
+    setPendingDevices((prev) => ({
+      ...prev,
+      [id]: newStatus ? 'turning_on' : 'turning_off',
+    }));
+
+    // 2. Ghi nhận bản ghi thao tác vào lịch sử với trạng thái "Pending"
+    const record = actionHistoryService.addRecord({
+      device:
+        deviceName === 'Đèn 1'
+          ? 'Light 1'
+          : deviceName === 'Đèn 2'
+          ? 'Light 2'
+
+
+
+
+
+
+
+
+
+
+          
+          : deviceName,
+      action: newStatus ? 'Turn ON' : 'Turn OFF',
+      operator: 'Nguyễn Thanh Bình',
+      status: 'Pending',
+    });
+
+    // 3. Đúng 0.5s (500ms) sau: chuyển sang trạng thái mới và hoàn thành
+    setTimeout(async () => {
+      try {
+        const updated = await deviceService.updateDeviceStatus(id, newStatus);
+        setDevices((prev) =>
+          prev.map((d) => (d.id === id ? { ...d, status: updated.status } : d))
+        );
+        // Cập nhật trạng thái trong Action History từ Pending sang Success
+        if (record) {
+          record.status = 'Success';
+        }
+      } catch (error) {
+        console.error('Lỗi khi cập nhật thiết bị:', error);
+        if (record) {
+          record.status = 'Failed';
+        }
+      } finally {
+        // Gỡ bỏ trạng thái pending sau khi hoàn tất
+        setPendingDevices((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+      }
+    }, 500);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Top Header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <h1
+          style={{
+            margin: 0,
+            fontSize: '22px',
+            fontWeight: '700',
+            color: '#1e293b',
+          }}
+        >
+          Dashboard
+        </h1>
+
+        {/* Trạng thái hệ thống */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '13.5px',
+            color: '#64748b',
+          }}
+        >
+          <span>Hệ thống trực tuyến</span>
+          <span
+            style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: '#22c55e',
+              display: 'inline-block',
+            }}
+          />
+        </div>
+      </div>
+
+      {/* 3 Thẻ cảm biến */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gap: '20px',
+        }}
+      >
+        <SensorCard
+          type="Temperature"
+          title={sensors?.temperature?.name || 'Nhiệt độ (Temperature)'}
+          value={sensors?.temperature?.value ?? '28.5'}
+          unit={sensors?.temperature?.unit ?? '°C'}
+        />
+        <SensorCard
+          type="Humidity"
+          title={sensors?.humidity?.name || 'Độ ẩm (Humidity)'}
+          value={sensors?.humidity?.value ?? '65'}
+          unit={sensors?.humidity?.unit ?? '%'}
+        />
+        <SensorCard
+          type="Light"
+          title={sensors?.light?.name || 'Ánh sáng (Light)'}
+          value={sensors?.light?.value ?? '720'}
+          unit={sensors?.light?.unit ?? 'lux'}
+        />
+      </div>
+
+      {/* Khu vực Biểu đồ & Điều khiển thiết bị */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '2fr 1fr',
+          gap: '20px',
+          alignItems: 'stretch',
+        }}
+        className="dashboard-content-grid"
+      >
+        <RealtimeChart data={chartData} />
+        <DeviceControl
+          devices={devices}
+          pendingDevices={pendingDevices}
+          onToggleDevice={handleToggleDevice}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
