@@ -33,12 +33,12 @@ export const actionHistoryService = {
         );
       }
 
-      // Lọc theo thời gian (Time) (Hỗ trợ định dạng Năm-Tháng-Ngày Giờ:Phút:Giây)
+      // Lọc theo thời gian (Time) (Hỗ trợ xóa ngày, xóa giây, xóa tháng hoặc nhiều từ khóa)
       if (params.time && params.time.trim() !== '' && params.time !== 'All Time' && params.time !== 'All') {
-        const timeQuery = params.time.toLowerCase().trim().replace(/\//g, '-');
+        const tokens = params.time.toLowerCase().trim().replace(/\//g, '-').split(/\s+/).filter(Boolean);
         filtered = filtered.filter((item) => {
           const itemTime = (item.time || '').toLowerCase().replace(/\//g, '-');
-          return itemTime.includes(timeQuery);
+          return tokens.every((token) => itemTime.includes(token));
         });
       }
 

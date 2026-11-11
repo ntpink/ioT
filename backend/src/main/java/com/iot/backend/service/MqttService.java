@@ -36,6 +36,9 @@ public class MqttService implements MqttCallback {
     @Value("${mqtt.topic.response:device_response}")
     private String topicResponse;
 
+    @Value("${sensor.light.invert:true}")
+    private boolean invertLight;
+
     private MqttClient client;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -103,7 +106,9 @@ public class MqttService implements MqttCallback {
                 Integer light = json.has("light") ? json.get("light").asInt() : null;
 
                 if (temp != null && hum != null && light != null) {
-                    sensorService.saveSensorData(temp, hum, light);
+                    // Hiệu chỉnh cảm biến quang trở (LDR): Che tối -> Lux thấp, Chiếu sáng -> Lux cao
+                    int processedLight = invertLight ? Math.max(0, 1023 - light) : light;
+                    sensorService.saveSensorData(temp, hum, processedLight);
                 }
             } else if (topicResponse.equals(topic)) {
                 // Định dạng phản hồi ACK: {"status":"SUCCESS","led1":"ON","led2":"OFF"}

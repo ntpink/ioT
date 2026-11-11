@@ -61,7 +61,7 @@ export const SensorFilter = ({
       <Input
         label="Time"
         value={filters.time || ''}
-        placeholder="VD: 2026-10-14, 10:30..."
+        placeholder="VD: Nhập thời gian"
         onChange={(val) => onFilterChange('time', val)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {

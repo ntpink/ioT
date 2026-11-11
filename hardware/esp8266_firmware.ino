@@ -161,6 +161,9 @@ void loop() {
     float h = dht.readHumidity();
     float t = dht.readTemperature();
     int lightValue = analogRead(A0); 
+    // Ghi chú: Nếu mạch quang trở mắc theo kiểu che tối ADC tăng, 
+    // Backend đã tự động tính (1023 - light) để trời sáng lux cao, che tối lux giảm.
+    // Hoặc có thể đảo trực tiếp tại đây: int lightValue = 1023 - analogRead(A0); 
 
     if (!isnan(h) && !isnan(t)) {
       String payload = "{\"temp\":" + String(t, 1) + ", \"hum\":" + String(h, 1) + ", \"light\":" + String(lightValue) + "}";

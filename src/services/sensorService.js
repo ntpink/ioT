@@ -208,12 +208,12 @@ export const sensorService = {
         );
       }
 
-      // Lọc theo thời gian (Time) nếu người dùng nhập (Hỗ trợ định dạng Năm-Tháng-Ngày Giờ:Phút:Giây)
+      // Lọc theo thời gian (Time) nếu người dùng nhập (hỗ trợ xóa ngày, xóa giây, xóa tháng hoặc nhiều từ khóa)
       if (params.time && params.time.trim() !== '') {
-        const timeQuery = params.time.toLowerCase().trim().replace(/\//g, '-');
+        const tokens = params.time.toLowerCase().trim().replace(/\//g, '-').split(/\s+/).filter(Boolean);
         filteredData = filteredData.filter((item) => {
           const itemTime = (item.time || '').toLowerCase().replace(/\//g, '-');
-          return itemTime.includes(timeQuery);
+          return tokens.every((token) => itemTime.includes(token));
         });
       }
 
