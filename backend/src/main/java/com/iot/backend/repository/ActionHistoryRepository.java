@@ -48,4 +48,8 @@ public interface ActionHistoryRepository extends JpaRepository<ActionHistory, Lo
 
     // Tìm bản ghi Pending gần nhất của thiết bị để chuyển thành Success khi nhận phản hồi ACK
     Optional<ActionHistory> findTopByDeviceAndStatusOrderByCreatedAtDesc(String device, String status);
+
+    // Lấy bản ghi thao tác mới nhất (dữ liệu cuối) của một thiết bị để khôi phục trạng thái khi reload
+    @Query(value = "SELECT * FROM action_history WHERE LOWER(device) LIKE LOWER(CONCAT('%', :devName, '%')) ORDER BY created_at DESC, id DESC LIMIT 1", nativeQuery = true)
+    Optional<ActionHistory> findLatestByDevice(@Param("devName") String devName);
 }

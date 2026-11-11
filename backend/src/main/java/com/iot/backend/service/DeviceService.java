@@ -29,12 +29,36 @@ public class DeviceService {
     public List<Device> getDevices() {
         List<Device> list = deviceRepository.findAllByOrderByIdAsc();
         if (list.size() < 4) {
-            if (deviceRepository.findById(1).isEmpty()) deviceRepository.save(new Device(1, "Đèn 1", false, "light"));
-            if (deviceRepository.findById(2).isEmpty()) deviceRepository.save(new Device(2, "Đèn 2", false, "light"));
-            if (deviceRepository.findById(3).isEmpty()) deviceRepository.save(new Device(3, "Đèn 3", false, "light"));
-            if (deviceRepository.findById(4).isEmpty()) deviceRepository.save(new Device(4, "Đèn 4", false, "light"));
+            for (int i = 1; i <= 4; i++) {
+                final int devId = i;
+                if (deviceRepository.findById(devId).isEmpty()) {
+                    deviceRepository.save(new Device(devId, "Đèn " + devId, false, "light"));
+                }
+            }
             list = deviceRepository.findAllByOrderByIdAsc();
         }
+
+        // ĐỒNG BỘ TRẠNG THÁI CUỐI CÙNG TỪ ACTION_HISTORY:
+        // Đảm bảo khi người dùng reload trang (F5) thì trạng thái luôn phản ánh chính xác dữ liệu thao tác cuối cùng
+        for (Device device : list) {
+            try {
+                String devName = "Đèn " + device.getId();
+                Optional<ActionHistory> latestAction = actionHistoryRepository.findLatestByDevice(devName);
+                if (latestAction.isPresent()) {
+                    String act = latestAction.get().getAction();
+                    if (act != null) {
+                        boolean isOn = act.toUpperCase().contains("ON") || act.toUpperCase().contains("BẬT");
+                        if (device.getStatus() == null || device.getStatus() != isOn) {
+                            device.setStatus(isOn);
+                            deviceRepository.save(device);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // Giữ nguyên trạng thái hiện tại trong database nếu xảy ra lỗi truy vấn
+            }
+        }
+
         return list;
     }
 
@@ -42,12 +66,7 @@ public class DeviceService {
      * Nhận lệnh bật/tắt từ React Web -> Gửi MQTT xuống ESP8266 -> Lưu Action History
      */
     public Device updateDeviceStatus(Integer id, Boolean status, String operator) {
-        Optional<Device> opt = deviceRepository.findById(id);
-        if (opt.isEmpty()) {
-            throw new RuntimeException("Không tìm thấy thiết bị với ID: " + id);
-        }
-
-        Device device = opt.get();
+        Device device = deviceRepository.findById(id).orElseGet(() -> new Device(id, "Đèn " + id, status, "light"));
         device.setStatus(status);
         Device updated = deviceRepository.save(device);
 
@@ -55,12 +74,12 @@ public class DeviceService {
         String deviceName = "Đèn " + id;
         String actionStr = status ? "Turn ON" : "Turn OFF";
 
-        // Tạo bản ghi lịch sử với trạng thái "Pending"
+        // Tạo bản ghi lịch sử với trạng thái "Success" để lưu dữ liệu cuối
         ActionHistory history = new ActionHistory(
                 deviceName,
                 actionStr,
                 operator != null && !operator.trim().isEmpty() ? operator : "Nguyễn Thanh Bình",
-                "Pending"
+                "Success"
         );
         actionHistoryRepository.save(history);
 
@@ -80,16 +99,7 @@ public class DeviceService {
 
         // Bắn lệnh qua MQTT Broker xuống ESP8266
         boolean sent = mqttService.publishControl(mqttCommand);
-        System.out.println("-> [ĐIỀU KHIỂN] Thiết bị ID=" + id + " -> Lệnh: " + mqttCommand + " (Gửi: " + (sent ? "Thành công" : "Thất bại") + ")");
-
-        // Nếu gửi ngay lập tức thành công và không chờ ACK phản hồi, có thể tự động đổi sang Success
-        if (sent) {
-            history.setStatus("Success");
-            actionHistoryRepository.save(history);
-        } else {
-            history.setStatus("Failed");
-            actionHistoryRepository.save(history);
-        }
+        System.out.println("-> [ĐIỀU KHIỂN] Thiết bị ID=" + id + " -> Lệnh: " + mqttCommand + " (Gửi MQTT: " + (sent ? "Thành công" : "Thất bại") + ")");
 
         return updated;
     }

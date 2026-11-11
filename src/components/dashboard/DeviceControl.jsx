@@ -9,10 +9,23 @@ import Toggle from '../common/Toggle';
 import { Lightbulb, Loader2 } from 'lucide-react';
 
 export const DeviceControl = ({ devices = [], pendingDevices = {}, onToggleDevice }) => {
-  // Đảm bảo luôn hiển thị đủ 4 đèn (Đèn 1, Đèn 2, Đèn 3, Đèn 4)
+  // Lấy trạng thái lưu trữ cuối cùng từ LocalStorage nếu danh sách devices chưa tải xong
+  const getFallbackStatus = (id) => {
+    try {
+      const saved = localStorage.getItem('iot_device_statuses');
+      if (saved) {
+        const map = JSON.parse(saved);
+        if (map && map[id] !== undefined) return Boolean(map[id]);
+      }
+    } catch {}
+    return false;
+  };
+
+  // Đảm bảo luôn hiển thị đủ 4 đèn (Đèn 1, Đèn 2, Đèn 3, Đèn 4) kèm trạng thái mới nhất
   const allDevices = [1, 2, 3, 4].map((id) => {
     const existing = devices.find((d) => d.id === id);
-    return existing || { id, name: `Đèn ${id}`, status: false, type: 'light' };
+    if (existing && existing.status !== undefined) return existing;
+    return { id, name: `Đèn ${id}`, status: getFallbackStatus(id), type: 'light' };
   });
 
   return (

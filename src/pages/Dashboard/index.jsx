@@ -9,7 +9,21 @@ import actionHistoryService from '../../services/actionHistoryService';
 export const Dashboard = () => {
   const [sensors, setSensors] = useState(null);
   const [chartData, setChartData] = useState([]);
-  const [devices, setDevices] = useState([]);
+  // Khởi tạo ngay trạng thái cuối cùng từ LocalStorage để khi F5 / Reload trang giữ nguyên 100%
+  const [devices, setDevices] = useState(() => {
+    try {
+      const saved = localStorage.getItem('iot_device_statuses');
+      const savedMap = saved ? JSON.parse(saved) : null;
+      return [1, 2, 3, 4].map((id) => ({
+        id,
+        name: `Đèn ${id}`,
+        status: savedMap && savedMap[id] !== undefined ? Boolean(savedMap[id]) : false,
+        type: 'light',
+      }));
+    } catch {
+      return [];
+    }
+  });
   const [pendingDevices, setPendingDevices] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -61,6 +75,14 @@ export const Dashboard = () => {
       ...prev,
       [id]: newStatus ? 'turning_on' : 'turning_off',
     }));
+
+    // Cập nhật ngay lập tức vào LocalStorage để reload trang (F5) lập tức giữ nguyên trạng thái mới
+    try {
+      const saved = localStorage.getItem('iot_device_statuses');
+      const savedMap = saved ? JSON.parse(saved) : {};
+      savedMap[id] = Boolean(newStatus);
+      localStorage.setItem('iot_device_statuses', JSON.stringify(savedMap));
+    } catch {}
 
     // 2. Ghi nhận bản ghi thao tác vào lịch sử với trạng thái "Pending"
     const record = actionHistoryService.addRecord({
