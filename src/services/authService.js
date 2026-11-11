@@ -57,10 +57,42 @@ export const authService = {
   },
 
   /**
-   * Kiểm tra đã đăng nhập chưa
+   * Kiểm tra xem JWT Token đã hết hạn chưa
+   */
+  isTokenExpired(token) {
+    if (!token) return true;
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return true;
+      // Giải mã payload base64 của JWT
+      const base64Url = parts[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      const payload = JSON.parse(jsonPayload);
+      if (!payload.exp) return false;
+      // exp tính bằng giây, Date.now() tính bằng mili giây
+      return payload.exp * 1000 <= Date.now();
+    } catch {
+      return true;
+    }
+  },
+
+  /**
+   * Kiểm tra đã đăng nhập chưa (kèm kiểm tra token còn hạn)
    */
   isAuthenticated() {
-    return !!localStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) return false;
+    if (this.isTokenExpired(token)) {
+      this.logout();
+      return false;
+    }
+    return true;
   },
 };
 

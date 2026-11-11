@@ -1,4 +1,5 @@
 import apiClient from './api';
+import authService from './authService';
 import { sensorRecordsMock, totalSensorRecordsCount } from '../mock/sensorData';
 import { realtimeChartMock } from '../mock/chartData';
 
@@ -113,6 +114,11 @@ export const sensorService = {
     let eventSource = null;
     try {
       const token = localStorage.getItem('auth_token') || '';
+      if (!token || authService.isTokenExpired(token)) {
+        authService.logout();
+        return () => {};
+      }
+
       const streamUrl = `${apiClient.baseURL}/sensors/stream${token ? `?token=${encodeURIComponent(token)}` : ''}`;
       eventSource = new EventSource(streamUrl);
       eventSource.addEventListener('sensor_update', (event) => {
@@ -124,7 +130,13 @@ export const sensorService = {
         }
       });
       eventSource.onerror = (err) => {
-        console.warn('Luồng SSE đang kết nối lại...', err);
+        const curToken = localStorage.getItem('auth_token');
+        if (!curToken || authService.isTokenExpired(curToken)) {
+          if (eventSource) eventSource.close();
+          authService.logout();
+        } else {
+          console.warn('Luồng SSE đang kết nối lại...', err);
+        }
       };
     } catch (err) {
       console.error('Không thể mở kết nối SSE:', err);

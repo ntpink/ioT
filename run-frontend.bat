@@ -6,3 +6,4 @@ echo DANG KHOI DONG REACT FRONTEND O CONG 5173...
 echo ========================================================
 npm run dev
 pause
+

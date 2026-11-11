@@ -49,6 +49,8 @@ public class JwtTokenProvider {
         try {
             Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
             return true;
+        } catch (ExpiredJwtException e) {
+            System.out.println("-> [JWT HẾT HẠN]: Token đã hết hạn lúc " + e.getClaims().getExpiration() + ". Client vui lòng đăng nhập lại.");
         } catch (JwtException | IllegalArgumentException e) {
             System.err.println("-> [JWT LỖI XÁC THỰC]: " + e.getMessage());
         }
