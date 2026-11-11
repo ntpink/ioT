@@ -6,7 +6,7 @@
 export const actionHistoryMock = [
   {
     id: '001',
-    device: 'Light 1',
+    device: 'Đèn 1',
     action: 'Turn ON',
     operator: 'Nguyễn Thanh Bình',
     status: 'Success',
@@ -14,7 +14,7 @@ export const actionHistoryMock = [
   },
   {
     id: '002',
-    device: 'Light 2',
+    device: 'Đèn 2',
     action: 'Turn OFF',
     operator: 'Nguyễn Thanh Bình',
     status: 'Success',
@@ -22,7 +22,7 @@ export const actionHistoryMock = [
   },
   {
     id: '003',
-    device: 'Fan 1',
+    device: 'Đèn 3',
     action: 'Turn ON',
     operator: 'Nguyễn Thanh Bình',
     status: 'Success',
@@ -30,7 +30,7 @@ export const actionHistoryMock = [
   },
   {
     id: '004',
-    device: 'Light 1',
+    device: 'Đèn 4',
     action: 'Turn OFF',
     operator: 'Nguyễn Thanh Bình',
     status: 'Success',
@@ -38,7 +38,7 @@ export const actionHistoryMock = [
   },
   {
     id: '005',
-    device: 'Light 1',
+    device: 'Đèn 1',
     action: 'Turn OFF',
     operator: 'Nguyễn Thanh Bình',
     status: 'Failed',
@@ -46,7 +46,7 @@ export const actionHistoryMock = [
   },
   {
     id: '006',
-    device: 'Fan 2',
+    device: 'Đèn 3',
     action: 'Turn ON',
     operator: 'Nguyễn Thanh Bình',
     status: 'Pending',
@@ -54,7 +54,7 @@ export const actionHistoryMock = [
   },
   {
     id: '007',
-    device: 'Light 2',
+    device: 'Đèn 2',
     action: 'Turn ON',
     operator: 'Nguyễn Thanh Bình',
     status: 'Success',
@@ -62,15 +62,15 @@ export const actionHistoryMock = [
   },
   {
     id: '008',
-    device: 'Fan 1',
-    action: 'Turn OFF',
+    device: 'Đèn 4',
+    action: 'Turn ON',
     operator: 'Nguyễn Thanh Bình',
     status: 'Pending',
     time: '2026-10-14 10:33:05',
   },
   {
     id: '009',
-    device: 'Light 1',
+    device: 'Đèn 1',
     action: 'Turn ON',
     operator: 'Nguyễn Thanh Bình',
     status: 'Failed',
@@ -78,7 +78,7 @@ export const actionHistoryMock = [
   },
   {
     id: '010',
-    device: 'Fan 2',
+    device: 'Đèn 3',
     action: 'Turn OFF',
     operator: 'Nguyễn Thanh Bình',
     status: 'Success',

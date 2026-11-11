@@ -5,6 +5,7 @@ public class ChartPointDto {
     private Float temperature;
     private Float humidity;
     private Integer light;
+    private Integer co2;
 
     public ChartPointDto() {}
 
@@ -13,6 +14,15 @@ public class ChartPointDto {
         this.temperature = temperature;
         this.humidity = humidity;
         this.light = light;
+        this.co2 = 450;
+    }
+
+    public ChartPointDto(String time, Float temperature, Float humidity, Integer light, Integer co2) {
+        this.time = time;
+        this.temperature = temperature;
+        this.humidity = humidity;
+        this.light = light;
+        this.co2 = co2;
     }
 
     public String getTime() { return time; }
@@ -23,5 +33,7 @@ public class ChartPointDto {
     public void setHumidity(Float humidity) { this.humidity = humidity; }
     public Integer getLight() { return light; }
     public void setLight(Integer light) { this.light = light; }
+    public Integer getCo2() { return co2; }
+    public void setCo2(Integer co2) { this.co2 = co2; }
 }
 

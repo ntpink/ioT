@@ -8,7 +8,7 @@ const USE_MOCK = false; // CHUYỂN HOÀN TOÀN SANG DÙNG DỮ LIỆU THẬT T�
 // 1. Dữ liệu thời gian thực cho Dashboard
 let currentStep = 6;
 
-// Giá trị 3 cảm biến hiện tại trên Dashboard
+// Giá trị 4 cảm biến hiện tại trên Dashboard (Nhiệt độ, Độ ẩm, Ánh sáng, CO2)
 let liveRealtimeSensors = {
   temperature: {
     id: 'temp_01',
@@ -30,6 +30,13 @@ let liveRealtimeSensors = {
     value: 720,
     unit: 'lux',
     type: 'Light',
+  },
+  co2: {
+    id: 'co2_01',
+    name: 'Nồng độ CO₂',
+    value: 450,
+    unit: 'ppm',
+    type: 'CO2',
   },
 };
 
@@ -69,17 +76,22 @@ if (typeof window !== 'undefined' && USE_MOCK) {
     const lightWave = Math.round(
       52 + Math.sin(currentStep * 0.85 + 1.2) * 26 + (Math.random() - 0.5) * 10
     );
+    const co2Wave = Math.round(
+      450 + Math.sin(currentStep * 0.45 + 0.8) * 60 + (Math.random() - 0.5) * 20
+    );
 
-    // Giá trị thực tế hiển thị trên 3 Card Dashboard
+    // Giá trị thực tế hiển thị trên các Card Dashboard
     const currentTemp = Number((26.5 + (tempWave / 100) * 5.0).toFixed(1)); // 27.0 - 30.5 °C
     const currentHum = Math.round(humWave); // 50 - 75 %
     const currentLight = Math.round(420 + (lightWave / 100) * 440); // 500 - 820 lux
+    const currentCo2 = Math.round(co2Wave); // 400 - 550 ppm
 
-    // Cập nhật giá trị hiển thị 3 Card
+    // Cập nhật giá trị hiển thị 4 Card
     liveRealtimeSensors = {
       temperature: { ...liveRealtimeSensors.temperature, value: currentTemp },
       humidity: { ...liveRealtimeSensors.humidity, value: currentHum },
       light: { ...liveRealtimeSensors.light, value: currentLight },
+      co2: { ...liveRealtimeSensors.co2, value: currentCo2 },
     };
 
     // Cập nhật Biểu đồ (thêm điểm mới, giữ 6 điểm để trượt ngang liên tục)
@@ -88,6 +100,7 @@ if (typeof window !== 'undefined' && USE_MOCK) {
       temperature: currentTemp,
       humidity: currentHum,
       light: currentLight,
+      co2: currentCo2,
     };
     liveChartData = [...liveChartData.slice(1), newChartPoint];
 
@@ -163,7 +176,8 @@ export const sensorService = {
       return {
         temperature: { id: 'temp_01', name: 'Nhiệt độ (Temperature)', value: '--', unit: '°C', type: 'Temperature' },
         humidity: { id: 'hum_01', name: 'Độ ẩm (Humidity)', value: '--', unit: '%', type: 'Humidity' },
-        light: { id: 'light_01', name: 'Ánh sáng (Light)', value: '--', unit: 'lux', type: 'Light' }
+        light: { id: 'light_01', name: 'Ánh sáng (Light)', value: '--', unit: 'lux', type: 'Light' },
+        co2: { id: 'co2_01', name: 'Nồng độ CO₂', value: 450, unit: 'ppm', type: 'CO2' },
       };
     }
   },

@@ -28,9 +28,11 @@ public class DeviceService {
 
     public List<Device> getDevices() {
         List<Device> list = deviceRepository.findAllByOrderByIdAsc();
-        if (list.isEmpty()) {
-            deviceRepository.save(new Device(1, "Light 1", false, "light"));
-            deviceRepository.save(new Device(2, "Light 2", false, "light"));
+        if (list.size() < 4) {
+            if (deviceRepository.findById(1).isEmpty()) deviceRepository.save(new Device(1, "Đèn 1", false, "light"));
+            if (deviceRepository.findById(2).isEmpty()) deviceRepository.save(new Device(2, "Đèn 2", false, "light"));
+            if (deviceRepository.findById(3).isEmpty()) deviceRepository.save(new Device(3, "Đèn 3", false, "light"));
+            if (deviceRepository.findById(4).isEmpty()) deviceRepository.save(new Device(4, "Đèn 4", false, "light"));
             list = deviceRepository.findAllByOrderByIdAsc();
         }
         return list;
@@ -49,8 +51,8 @@ public class DeviceService {
         device.setStatus(status);
         Device updated = deviceRepository.save(device);
 
-        // Chuẩn hóa tên thiết bị để lưu Action History
-        String deviceName = id == 1 ? "Light 1" : (id == 2 ? "Light 2" : device.getName());
+        // Chuẩn hóa tên thiết bị để lưu Action History: Đèn 1, Đèn 2, Đèn 3, Đèn 4
+        String deviceName = "Đèn " + id;
         String actionStr = status ? "Turn ON" : "Turn OFF";
 
         // Tạo bản ghi lịch sử với trạng thái "Pending"
@@ -62,12 +64,16 @@ public class DeviceService {
         );
         actionHistoryRepository.save(history);
 
-        // Tạo lệnh MQTT đúng chuẩn theo sketch_oct6a.ino
+        // Tạo lệnh MQTT cho 4 đèn
         String mqttCommand;
         if (id == 1) {
             mqttCommand = status ? "LED1_ON" : "LED1_OFF";
         } else if (id == 2) {
             mqttCommand = status ? "LED2_ON" : "LED2_OFF";
+        } else if (id == 3) {
+            mqttCommand = status ? "LED3_ON" : "LED3_OFF";
+        } else if (id == 4) {
+            mqttCommand = status ? "LED4_ON" : "LED4_OFF";
         } else {
             mqttCommand = status ? "LED_ON" : "LED_OFF";
         }
@@ -98,7 +104,7 @@ public class DeviceService {
             System.out.println("-> [ESP8266 PHẢN HỒI]: Trạng thái = " + status);
 
             if ("SUCCESS".equalsIgnoreCase(status)) {
-                // Đồng bộ lại trạng thái LED 1 và LED 2 trong database nếu có
+                // Đồng bộ lại trạng thái 4 LED trong database nếu có phản hồi
                 if (json.has("led1")) {
                     boolean led1 = "ON".equalsIgnoreCase(json.get("led1").asText());
                     deviceRepository.findById(1).ifPresent(d -> { d.setStatus(led1); deviceRepository.save(d); });
@@ -106,6 +112,14 @@ public class DeviceService {
                 if (json.has("led2")) {
                     boolean led2 = "ON".equalsIgnoreCase(json.get("led2").asText());
                     deviceRepository.findById(2).ifPresent(d -> { d.setStatus(led2); deviceRepository.save(d); });
+                }
+                if (json.has("led3")) {
+                    boolean led3 = "ON".equalsIgnoreCase(json.get("led3").asText());
+                    deviceRepository.findById(3).ifPresent(d -> { d.setStatus(led3); deviceRepository.save(d); });
+                }
+                if (json.has("led4")) {
+                    boolean led4 = "ON".equalsIgnoreCase(json.get("led4").asText());
+                    deviceRepository.findById(4).ifPresent(d -> { d.setStatus(led4); deviceRepository.save(d); });
                 }
             }
         } catch (Exception e) {

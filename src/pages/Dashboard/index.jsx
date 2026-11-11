@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import SensorCard from '../../components/dashboard/SensorCard';
 import RealtimeChart from '../../components/dashboard/RealtimeChart';
 import DeviceControl from '../../components/dashboard/DeviceControl';
@@ -54,11 +54,7 @@ export const Dashboard = () => {
     if (pendingDevices[id]) return;
 
     const targetDevice = devices.find((d) => d.id === id);
-    const deviceName = targetDevice
-      ? targetDevice.name
-      : id === 1
-      ? 'Light 1'
-      : 'Light 2';
+    const deviceName = targetDevice ? targetDevice.name : `Đèn ${id}`;
 
     // 1. Kích hoạt trạng thái chuyển đổi (Pending): 'turning_on' hoặc 'turning_off'
     setPendingDevices((prev) => ({
@@ -68,23 +64,7 @@ export const Dashboard = () => {
 
     // 2. Ghi nhận bản ghi thao tác vào lịch sử với trạng thái "Pending"
     const record = actionHistoryService.addRecord({
-      device:
-        deviceName === 'Đèn 1'
-          ? 'Light 1'
-          : deviceName === 'Đèn 2'
-          ? 'Light 2'
-
-
-
-
-
-
-
-
-
-
-          
-          : deviceName,
+      device: deviceName,
       action: newStatus ? 'Turn ON' : 'Turn OFF',
       operator: 'Nguyễn Thanh Bình',
       status: 'Pending',
@@ -119,7 +99,7 @@ export const Dashboard = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Top Header */}
+      {/* 1. Header Dashboard */}
       <div
         style={{
           display: 'flex',
@@ -161,45 +141,66 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* 3 Thẻ cảm biến */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '20px',
-        }}
-      >
-        <SensorCard
-          type="Temperature"
-          title={sensors?.temperature?.name || 'Nhiệt độ (Temperature)'}
-          value={sensors?.temperature?.value ?? '28.5'}
-          unit={sensors?.temperature?.unit ?? '°C'}
-        />
-        <SensorCard
-          type="Humidity"
-          title={sensors?.humidity?.name || 'Độ ẩm (Humidity)'}
-          value={sensors?.humidity?.value ?? '65'}
-          unit={sensors?.humidity?.unit ?? '%'}
-        />
-        <SensorCard
-          type="Light"
-          title={sensors?.light?.name || 'Ánh sáng (Light)'}
-          value={sensors?.light?.value ?? '720'}
-          unit={sensors?.light?.unit ?? 'lux'}
-        />
-      </div>
+      {/* 2. Cụm 4 Biểu đồ (Ánh sáng, Nhiệt độ, Độ ẩm, Nồng độ CO2) dạng lưới 2x2 */}
+      <RealtimeChart data={chartData} sensors={sensors} />
 
-      {/* Khu vực Biểu đồ & Điều khiển thiết bị */}
+      {/* 3. Khu vực phía dưới: 2 cột (Dữ liệu cảm biến & Điều khiển đèn) */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '2fr 1fr',
+          gridTemplateColumns: 'repeat(2, 1fr)',
           gap: '20px',
-          alignItems: 'stretch',
+          alignItems: 'start',
         }}
-        className="dashboard-content-grid"
       >
-        <RealtimeChart data={chartData} />
+        {/* Cột trái: Dữ liệu cảm biến */}
+        <div>
+          <h3
+            style={{
+              margin: '0 0 14px 0',
+              fontSize: '16px',
+              fontWeight: '700',
+              color: '#1e293b',
+            }}
+          >
+            Dữ liệu cảm biến
+          </h3>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '14px',
+            }}
+          >
+            <SensorCard
+              type="Light"
+              title="Ánh sáng (Light)"
+              value={sensors?.light?.value ?? '720'}
+              unit="lux"
+            />
+            <SensorCard
+              type="Temperature"
+              title="Nhiệt độ (Temperature)"
+              value={sensors?.temperature?.value ?? '28.5'}
+              unit="°C"
+            />
+            <SensorCard
+              type="Humidity"
+              title="Độ ẩm (Humidity)"
+              value={sensors?.humidity?.value ?? '65'}
+              unit="%"
+            />
+            <SensorCard
+              type="CO2"
+              title="Nồng độ CO₂"
+              value={sensors?.co2?.value ?? '450'}
+              unit="ppm"
+              subtext="Tự sinh ngẫu nhiên"
+            />
+          </div>
+        </div>
+
+        {/* Cột phải: Điều khiển đèn (4 đèn) */}
         <DeviceControl
           devices={devices}
           pendingDevices={pendingDevices}

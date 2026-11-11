@@ -25,14 +25,18 @@ export const deviceService = {
     try {
       const res = await apiClient.get('/devices');
       return Array.isArray(res) && res.length > 0 ? res : [
-        { id: 1, name: 'Đèn 1', status: false, type: 'light' },
-        { id: 2, name: 'Đèn 2', status: false, type: 'light' }
+        { id: 1, name: 'Đèn 1', status: true, type: 'light' },
+        { id: 2, name: 'Đèn 2', status: false, type: 'light' },
+        { id: 3, name: 'Đèn 3', status: true, type: 'light' },
+        { id: 4, name: 'Đèn 4', status: false, type: 'light' },
       ];
     } catch (err) {
       console.warn('Lỗi khi lấy danh sách thiết bị thật từ backend:', err);
       return [
-        { id: 1, name: 'Đèn 1', status: false, type: 'light' },
-        { id: 2, name: 'Đèn 2', status: false, type: 'light' }
+        { id: 1, name: 'Đèn 1', status: true, type: 'light' },
+        { id: 2, name: 'Đèn 2', status: false, type: 'light' },
+        { id: 3, name: 'Đèn 3', status: true, type: 'light' },
+        { id: 4, name: 'Đèn 4', status: false, type: 'light' },
       ];
     }
   },

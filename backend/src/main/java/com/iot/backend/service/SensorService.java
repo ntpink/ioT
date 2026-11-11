@@ -30,14 +30,20 @@ public class SensorService {
     // Danh sách các kết nối Web Frontend đang lắng nghe trực tiếp luồng SSE
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
+    // Sinh ngẫu nhiên nồng độ CO2 dao động tự nhiên quanh mức 400 - 650 ppm
+    private int generateRandomCo2() {
+        return 400 + (int)(Math.random() * 250);
+    }
+
     /**
      * Nhận số đo từ ESP8266 qua MQTT -> Lưu vào MySQL -> Bắn tin realtime lên Frontend
      */
     public SensorData saveSensorData(Float temperature, Float humidity, Integer light) {
-        SensorData entity = new SensorData(temperature, humidity, light);
+        int co2 = generateRandomCo2();
+        SensorData entity = new SensorData(temperature, humidity, light, co2);
         SensorData saved = sensorDataRepository.save(entity);
         System.out.println("-> [MYSQL ĐÃ LƯU] ID: " + saved.getId() + 
-                           " | Temp: " + temperature + "°C | Hum: " + humidity + "% | Light: " + light + " lux");
+                           " | Temp: " + temperature + "°C | Hum: " + humidity + "% | Light: " + light + " lux | CO2: " + co2 + " ppm");
 
         // Phát tín hiệu cập nhật thời gian thực ngay lập tức tới Frontend
         broadcastRealtimeUpdate();
@@ -45,19 +51,23 @@ public class SensorService {
     }
 
     /**
-     * Lấy dữ liệu 3 thẻ cảm biến hiện tại cho Dashboard
+     * Lấy dữ liệu 4 thẻ cảm biến hiện tại cho Dashboard (kèm CO2 tự sinh)
      */
     public RealtimeSensorsResponse getRealtimeSensors() {
         Optional<SensorData> latestOpt = sensorDataRepository.findTopByOrderByIdDesc();
         float temp = 0.0f;
         float hum = 0.0f;
         int light = 0;
+        int co2 = generateRandomCo2();
 
         if (latestOpt.isPresent()) {
             SensorData data = latestOpt.get();
             temp = data.getTemperature();
             hum = data.getHumidity();
             light = data.getLight();
+            if (data.getCo2() != null) {
+                co2 = data.getCo2();
+            }
         }
 
         RealtimeSensorsResponse.SensorCardDto tempCard = new RealtimeSensorsResponse.SensorCardDto(
@@ -69,8 +79,11 @@ public class SensorService {
         RealtimeSensorsResponse.SensorCardDto lightCard = new RealtimeSensorsResponse.SensorCardDto(
                 "light_01", "Ánh sáng (Light)", light, "lux", "Light"
         );
+        RealtimeSensorsResponse.SensorCardDto co2Card = new RealtimeSensorsResponse.SensorCardDto(
+                "co2_01", "Nồng độ CO₂", co2, "ppm", "CO2"
+        );
 
-        return new RealtimeSensorsResponse(tempCard, humCard, lightCard);
+        return new RealtimeSensorsResponse(tempCard, humCard, lightCard, co2Card);
     }
 
     /**
@@ -84,7 +97,8 @@ public class SensorService {
         for (int i = list.size() - 1; i >= 0; i--) {
             SensorData s = list.get(i);
             String timeStr = s.getCreatedAt() != null ? s.getCreatedAt().format(timeFormatter) : "00:00:00";
-            result.add(new ChartPointDto(timeStr, s.getTemperature(), s.getHumidity(), s.getLight()));
+            int co2Val = s.getCo2() != null ? s.getCo2() : generateRandomCo2();
+            result.add(new ChartPointDto(timeStr, s.getTemperature(), s.getHumidity(), s.getLight(), co2Val));
         }
 
         return result;
@@ -113,6 +127,7 @@ public class SensorService {
 
         for (SensorData s : sensorPage.getContent()) {
             String timeFormatted = s.getCreatedAt() != null ? s.getCreatedAt().format(tableDateFormatter) : "";
+            int co2Val = s.getCo2() != null ? s.getCo2() : 450;
 
             // Kiểm tra theo loại cảm biến được chọn
             if (type == null || type.isEmpty() || "All Sensors".equalsIgnoreCase(type) || "All".equalsIgnoreCase(type)) {
@@ -122,18 +137,22 @@ public class SensorService {
                 addRecordIfMatches(records, String.format("%03d", recordCounter++), "Humidity", s.getHumidity() + " %", timeFormatted, valueQuery);
                 // Thêm bản ghi Ánh sáng
                 addRecordIfMatches(records, String.format("%03d", recordCounter++), "Light", s.getLight() + " lux", timeFormatted, valueQuery);
+                // Thêm bản ghi Nồng độ CO2
+                addRecordIfMatches(records, String.format("%03d", recordCounter++), "CO2", co2Val + " ppm", timeFormatted, valueQuery);
             } else if ("Temperature".equalsIgnoreCase(type)) {
                 addRecordIfMatches(records, String.format("%03d", recordCounter++), "Temperature", s.getTemperature() + " °C", timeFormatted, valueQuery);
             } else if ("Humidity".equalsIgnoreCase(type)) {
                 addRecordIfMatches(records, String.format("%03d", recordCounter++), "Humidity", s.getHumidity() + " %", timeFormatted, valueQuery);
             } else if ("Light".equalsIgnoreCase(type)) {
                 addRecordIfMatches(records, String.format("%03d", recordCounter++), "Light", s.getLight() + " lux", timeFormatted, valueQuery);
+            } else if ("CO2".equalsIgnoreCase(type) || "Nồng độ CO2".equalsIgnoreCase(type)) {
+                addRecordIfMatches(records, String.format("%03d", recordCounter++), "CO2", co2Val + " ppm", timeFormatted, valueQuery);
             }
         }
 
         long totalElements = sensorPage.getTotalElements();
         if (type == null || type.isEmpty() || "All Sensors".equalsIgnoreCase(type) || "All".equalsIgnoreCase(type)) {
-            totalElements *= 3; // Vì 1 bản ghi gốc chứa cả 3 cảm biến
+            totalElements *= 4; // Vì 1 bản ghi gốc chứa 4 thông số cảm biến (Temp, Hum, Light, CO2)
         }
 
         return new PaginatedResponse<>(records, totalElements, page, pageSize);

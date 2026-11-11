@@ -5,6 +5,7 @@ public class RealtimeSensorsResponse {
     private SensorCardDto temperature;
     private SensorCardDto humidity;
     private SensorCardDto light;
+    private SensorCardDto co2;
 
     public RealtimeSensorsResponse() {}
 
@@ -12,6 +13,13 @@ public class RealtimeSensorsResponse {
         this.temperature = temperature;
         this.humidity = humidity;
         this.light = light;
+    }
+
+    public RealtimeSensorsResponse(SensorCardDto temperature, SensorCardDto humidity, SensorCardDto light, SensorCardDto co2) {
+        this.temperature = temperature;
+        this.humidity = humidity;
+        this.light = light;
+        this.co2 = co2;
     }
 
     public static class SensorCardDto {
@@ -49,5 +57,7 @@ public class RealtimeSensorsResponse {
     public void setHumidity(SensorCardDto humidity) { this.humidity = humidity; }
     public SensorCardDto getLight() { return light; }
     public void setLight(SensorCardDto light) { this.light = light; }
+    public SensorCardDto getCo2() { return co2; }
+    public void setCo2(SensorCardDto co2) { this.co2 = co2; }
 }
 

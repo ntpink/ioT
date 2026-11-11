@@ -20,6 +20,9 @@ public class SensorData {
     @Column(nullable = false)
     private Integer light;
 
+    @Column(name = "co2")
+    private Integer co2;
+
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
@@ -31,6 +34,14 @@ public class SensorData {
         this.temperature = temperature;
         this.humidity = humidity;
         this.light = light;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public SensorData(Float temperature, Float humidity, Integer light, Integer co2) {
+        this.temperature = temperature;
+        this.humidity = humidity;
+        this.light = light;
+        this.co2 = co2;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -72,6 +83,14 @@ public class SensorData {
 
     public void setLight(Integer light) {
         this.light = light;
+    }
+
+    public Integer getCo2() {
+        return co2;
+    }
+
+    public void setCo2(Integer co2) {
+        this.co2 = co2;
     }
 
     public LocalDateTime getCreatedAt() {

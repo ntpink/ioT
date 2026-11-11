@@ -11,10 +11,12 @@ export const HistoryFilter = ({
 }) => {
   const deviceOptions = [
     { value: 'All Devices', label: 'All Devices' },
+    { value: 'Đèn 1', label: 'Đèn 1' },
+    { value: 'Đèn 2', label: 'Đèn 2' },
+    { value: 'Đèn 3', label: 'Đèn 3' },
+    { value: 'Đèn 4', label: 'Đèn 4' },
     { value: 'Light 1', label: 'Light 1' },
     { value: 'Light 2', label: 'Light 2' },
-    { value: 'Fan 1', label: 'Fan 1' },
-    { value: 'Fan 2', label: 'Fan 2' },
   ];
 
   const actionOptions = [
@@ -67,7 +69,7 @@ export const HistoryFilter = ({
       <Input
         label="Time"
         value={filters.time || ''}
-        placeholder="VD: 2026-10-14, 10:30..."
+        placeholder="Nhập thời gian"
         onChange={(val) => onFilterChange('time', val)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {

@@ -17,16 +17,17 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. Bảng lưu trữ dữ liệu đo từ cảm biến (Nhiệt độ, Độ ẩm, Ánh sáng)
+-- 2. Bảng lưu trữ dữ liệu đo từ cảm biến (Nhiệt độ, Độ ẩm, Ánh sáng, Nồng độ CO2)
 CREATE TABLE IF NOT EXISTS sensor_data (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     temperature FLOAT NOT NULL,
     humidity FLOAT NOT NULL,
     light INT NOT NULL,
+    co2 INT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 3. Bảng quản lý trạng thái các thiết bị ngoại vi (Đèn 1, Đèn 2)
+-- 3. Bảng quản lý trạng thái các thiết bị ngoại vi (Đèn 1, Đèn 2, Đèn 3, Đèn 4)
 CREATE TABLE IF NOT EXISTS devices (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL,
@@ -35,11 +36,13 @@ CREATE TABLE IF NOT EXISTS devices (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Khởi tạo dữ liệu ban đầu cho 2 thiết bị đèn
+-- Khởi tạo dữ liệu ban đầu cho 4 thiết bị đèn
 INSERT INTO devices (id, name, status, type) 
 VALUES 
     (1, 'Đèn 1', FALSE, 'light'), 
-    (2, 'Đèn 2', FALSE, 'light')
+    (2, 'Đèn 2', FALSE, 'light'),
+    (3, 'Đèn 3', FALSE, 'light'),
+    (4, 'Đèn 4', FALSE, 'light')
 ON DUPLICATE KEY UPDATE name=VALUES(name);
 
 -- 4. Bảng nhật ký lịch sử thao tác điều khiển thiết bị

@@ -23,6 +23,7 @@ export const SensorFilter = ({
     { value: 'Temperature', label: 'Temperature' },
     { value: 'Humidity', label: 'Humidity' },
     { value: 'Light', label: 'Light' },
+    { value: 'CO2', label: 'CO2' },
   ];
 
   return (
