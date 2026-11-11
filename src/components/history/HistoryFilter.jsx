@@ -67,7 +67,7 @@ export const HistoryFilter = ({
       <Input
         label="Time"
         value={filters.time || ''}
-        placeholder="Nhập thời gian..."
+        placeholder="VD: 2026-10-14, 10:30..."
         onChange={(val) => onFilterChange('time', val)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {

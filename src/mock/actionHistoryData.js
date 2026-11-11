@@ -10,7 +10,7 @@ export const actionHistoryMock = [
     action: 'Turn ON',
     operator: 'Nguyễn Thanh Bình',
     status: 'Success',
-    time: '14/10/2026 10:30:02',
+    time: '2026-10-14 10:30:02',
   },
   {
     id: '002',
@@ -18,7 +18,7 @@ export const actionHistoryMock = [
     action: 'Turn OFF',
     operator: 'Nguyễn Thanh Bình',
     status: 'Success',
-    time: '14/10/2026 10:30:04',
+    time: '2026-10-14 10:30:04',
   },
   {
     id: '003',
@@ -26,7 +26,7 @@ export const actionHistoryMock = [
     action: 'Turn ON',
     operator: 'Nguyễn Thanh Bình',
     status: 'Success',
-    time: '14/10/2026 10:30:06',
+    time: '2026-10-14 10:30:06',
   },
   {
     id: '004',
@@ -34,7 +34,7 @@ export const actionHistoryMock = [
     action: 'Turn OFF',
     operator: 'Nguyễn Thanh Bình',
     status: 'Success',
-    time: '14/10/2026 10:31:10',
+    time: '2026-10-14 10:31:10',
   },
   {
     id: '005',
@@ -42,7 +42,7 @@ export const actionHistoryMock = [
     action: 'Turn OFF',
     operator: 'Nguyễn Thanh Bình',
     status: 'Failed',
-    time: '14/10/2026 10:31:10',
+    time: '2026-10-14 10:31:10',
   },
   {
     id: '006',
@@ -50,7 +50,7 @@ export const actionHistoryMock = [
     action: 'Turn ON',
     operator: 'Nguyễn Thanh Bình',
     status: 'Pending',
-    time: '14/10/2026 10:31:15',
+    time: '2026-10-14 10:31:15',
   },
   {
     id: '007',
@@ -58,7 +58,7 @@ export const actionHistoryMock = [
     action: 'Turn ON',
     operator: 'Nguyễn Thanh Bình',
     status: 'Success',
-    time: '14/10/2026 10:32:20',
+    time: '2026-10-14 10:32:20',
   },
   {
     id: '008',
@@ -66,7 +66,7 @@ export const actionHistoryMock = [
     action: 'Turn OFF',
     operator: 'Nguyễn Thanh Bình',
     status: 'Pending',
-    time: '14/10/2026 10:33:05',
+    time: '2026-10-14 10:33:05',
   },
   {
     id: '009',
@@ -74,7 +74,7 @@ export const actionHistoryMock = [
     action: 'Turn ON',
     operator: 'Nguyễn Thanh Bình',
     status: 'Failed',
-    time: '14/10/2026 10:34:10',
+    time: '2026-10-14 10:34:10',
   },
   {
     id: '010',
@@ -82,6 +82,6 @@ export const actionHistoryMock = [
     action: 'Turn OFF',
     operator: 'Nguyễn Thanh Bình',
     status: 'Success',
-    time: '14/10/2026 10:35:12',
+    time: '2026-10-14 10:35:12',
   },
 ];

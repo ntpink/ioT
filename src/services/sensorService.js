@@ -196,12 +196,13 @@ export const sensorService = {
         );
       }
 
-      // Lọc theo thời gian (Time) nếu người dùng nhập
+      // Lọc theo thời gian (Time) nếu người dùng nhập (Hỗ trợ định dạng Năm-Tháng-Ngày Giờ:Phút:Giây)
       if (params.time && params.time.trim() !== '') {
-        const timeQuery = params.time.toLowerCase().trim();
-        filteredData = filteredData.filter((item) =>
-          item.time.toLowerCase().includes(timeQuery)
-        );
+        const timeQuery = params.time.toLowerCase().trim().replace(/\//g, '-');
+        filteredData = filteredData.filter((item) => {
+          const itemTime = (item.time || '').toLowerCase().replace(/\//g, '-');
+          return itemTime.includes(timeQuery);
+        });
       }
 
       const total = filteredData.length;

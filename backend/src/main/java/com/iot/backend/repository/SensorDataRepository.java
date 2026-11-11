@@ -23,18 +23,22 @@ public interface SensorDataRepository extends JpaRepository<SensorData, Long> {
     List<SensorData> findTop6ByOrderByCreatedAtDesc();
     List<SensorData> findTop10ByOrderByCreatedAtDesc();
 
-    // Lọc theo thời gian nếu cần
+    // Lọc theo thời gian nếu cần (Hỗ trợ định dạng Năm-Tháng-Ngày Giờ:Phút:Giây yyyy-MM-dd HH:mm:ss)
     @Query(value = "SELECT * FROM sensor_data s WHERE " +
            "(:timeQuery IS NULL OR :timeQuery = '' OR " +
-           "DATE_FORMAT(s.created_at, '%d/%m/%Y %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%') OR " +
-           "DATE_FORMAT(s.created_at, '%H:%i:%s %m/%d/%Y') LIKE CONCAT('%', :timeQuery, '%') OR " +
-           "DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%')) " +
+           "DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', REPLACE(TRIM(:timeQuery), '/', '-'), '%') OR " +
+           "DATE_FORMAT(s.created_at, '%Y/%m/%d %H:%i:%s') LIKE CONCAT('%', REPLACE(TRIM(:timeQuery), '-', '/'), '%') OR " +
+           "DATE_FORMAT(s.created_at, '%Y-%c-%e %k:%i:%s') LIKE CONCAT('%', REPLACE(TRIM(:timeQuery), '/', '-'), '%') OR " +
+           "DATE_FORMAT(s.created_at, '%d/%m/%Y %H:%i:%s') LIKE CONCAT('%', TRIM(:timeQuery), '%') OR " +
+           "DATE_FORMAT(s.created_at, '%H:%i:%s') LIKE CONCAT('%', TRIM(:timeQuery), '%')) " +
            "ORDER BY s.created_at DESC",
            countQuery = "SELECT count(*) FROM sensor_data s WHERE " +
            "(:timeQuery IS NULL OR :timeQuery = '' OR " +
-           "DATE_FORMAT(s.created_at, '%d/%m/%Y %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%') OR " +
-           "DATE_FORMAT(s.created_at, '%H:%i:%s %m/%d/%Y') LIKE CONCAT('%', :timeQuery, '%') OR " +
-           "DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', :timeQuery, '%'))",
+           "DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', REPLACE(TRIM(:timeQuery), '/', '-'), '%') OR " +
+           "DATE_FORMAT(s.created_at, '%Y/%m/%d %H:%i:%s') LIKE CONCAT('%', REPLACE(TRIM(:timeQuery), '-', '/'), '%') OR " +
+           "DATE_FORMAT(s.created_at, '%Y-%c-%e %k:%i:%s') LIKE CONCAT('%', REPLACE(TRIM(:timeQuery), '/', '-'), '%') OR " +
+           "DATE_FORMAT(s.created_at, '%d/%m/%Y %H:%i:%s') LIKE CONCAT('%', TRIM(:timeQuery), '%') OR " +
+           "DATE_FORMAT(s.created_at, '%H:%i:%s') LIKE CONCAT('%', TRIM(:timeQuery), '%'))",
            nativeQuery = true)
     Page<SensorData> searchSensors(@Param("timeQuery") String timeQuery, Pageable pageable);
 }

@@ -33,12 +33,13 @@ export const actionHistoryService = {
         );
       }
 
-      // Lọc theo thời gian (Time)
+      // Lọc theo thời gian (Time) (Hỗ trợ định dạng Năm-Tháng-Ngày Giờ:Phút:Giây)
       if (params.time && params.time.trim() !== '' && params.time !== 'All Time' && params.time !== 'All') {
-        const timeQuery = params.time.toLowerCase().trim();
-        filtered = filtered.filter((item) =>
-          item.time.toLowerCase().includes(timeQuery)
-        );
+        const timeQuery = params.time.toLowerCase().trim().replace(/\//g, '-');
+        filtered = filtered.filter((item) => {
+          const itemTime = (item.time || '').toLowerCase().replace(/\//g, '-');
+          return itemTime.includes(timeQuery);
+        });
       }
 
       const page = params.page || 1;
@@ -73,7 +74,7 @@ export const actionHistoryService = {
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const day = String(now.getDate()).padStart(2, '0');
       const year = now.getFullYear();
-      const time = `${day}/${month}/${year} ${timeStr}`;
+      const time = `${year}-${month}-${day} ${timeStr}`;
       const newRecord = {
         id: String(actionHistoryMock.length + 1).padStart(3, '0'),
         device,
