@@ -83,3 +83,6 @@ ioT/
 ### Bước 5: Nạp code phần cứng ESP8266
 * Mở file [`hardware/esp8266_firmware.ino`](./hardware/esp8266_firmware.ino) bằng Arduino IDE.
 * Cấu hình WiFi và địa chỉ IP Broker, sau đó nạp code lên mạch vi điều khiển ESP8266.
+
+* Lệnh chạy toàn bộ dự án 
+.\start-system.bat
